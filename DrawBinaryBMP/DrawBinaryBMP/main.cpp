@@ -230,7 +230,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	return msg.wParam;	
 }
 
-LONG WINAPI WndProc(HWND hWnd, UINT Message, WPARAM wparam, LPARAM lparam)
+LRESULT WINAPI WndProc(HWND hWnd, UINT Message, WPARAM wparam, LPARAM lparam)
 {
 	HDC hDC; // создаём дескриптор устройства
 	PAINTSTRUCT ps; // структура, сод-щая информацию о клиентской области (размеры, цвет и тп)
@@ -288,7 +288,7 @@ LONG WINAPI WndProc(HWND hWnd, UINT Message, WPARAM wparam, LPARAM lparam)
 	return 0;
 }
 
-LONG WINAPI ChildProc(HWND hWnd, UINT Message, WPARAM wparam, LPARAM lparam)
+LRESULT WINAPI ChildProc(HWND hWnd, UINT Message, WPARAM wparam, LPARAM lparam)
 {
 	HDC hDC; // создаём дескриптор устройства
 	PAINTSTRUCT ps; // структура, сод-щая информацию о клиентской области (размеры, цвет и тп)
