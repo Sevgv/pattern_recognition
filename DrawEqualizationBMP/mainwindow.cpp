@@ -53,10 +53,16 @@ MainWindow::~MainWindow()
 
 void MainWindow::paintEvent(QPaintEvent *)
 {
-    unsigned char* color =  new unsigned char[256];
-    for (int i = 0; i < 256; i++)
+//    unsigned char* color =  new unsigned char[256];
+//    for (int i = 0; i < 256; i++)
+//    {
+//        color[i] = static_cast<unsigned char>(i);
+//    }
+
+    unsigned int* color =  new unsigned int[256];
+    for (unsigned int i = 0; i < 256; i++)
     {
-        color[i] = static_cast<unsigned char>(i);
+        color[i] = i;
     }
 
     QPainter painter;
@@ -64,7 +70,7 @@ void MainWindow::paintEvent(QPaintEvent *)
      QImage img(fBMP->get_Height(), fBMP->get_Width(), QImage::Format_Indexed8);
      for (int i = 0; i < fBMP->get_Height(); i++) {
          for (int j = 0; j < fBMP->get_Width(); j++) {
-             img.setPixel(j, i, color[fBMP->arrIndexes[i][j]]);
+             img.setPixel(j, i, fBMP->arrIndexes[i][j]);
       }
      }
      painter.drawImage(0,0,img);
