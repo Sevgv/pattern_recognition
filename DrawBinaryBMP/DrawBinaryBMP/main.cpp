@@ -69,19 +69,20 @@ public:
 
 	bool bynary_color(int b, int g, int r)
 	{
+		int limit = 128;
 		bool blue;
 		bool green;
 		bool red;
 
-		if (b >= 128)
+		if (b >= limit)
 			blue = true;
 		else
 			blue = false;
-		if (g >= 128)
+		if (g >= limit)
 			green = true;
 		else
 			green = false;
-		if (r >= 128)
+		if (r >= limit)
 			red = true;
 		else
 			red = false;
