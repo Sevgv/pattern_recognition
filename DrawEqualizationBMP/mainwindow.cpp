@@ -67,7 +67,7 @@ void MainWindow::paintEvent(QPaintEvent *)
 
     QPainter painter;
      painter.begin(this);
-     QImage img(fBMP->get_Height(), fBMP->get_Width(), QImage::Format_Indexed8);
+     QImage img(fBMP->get_Width(), fBMP->get_Height(), QImage::Format_Indexed8);
      for (int i = 0; i < fBMP->get_Height(); i++) {
          for (int j = 0; j < fBMP->get_Width(); j++) {
              img.setPixel(j, i, fBMP->arrIndexes[i][j]);
