@@ -61,7 +61,7 @@ public:
 
     RGBQ *Palette = new RGBQ[256];
 
-    int** arrIndexes;
+    unsigned char** arrIndexes;
 
     void init(FILE *pFile)
     {
@@ -93,13 +93,13 @@ public:
             Palette[i].rgbReserved = getc(pFile);
         }
 
-        arrIndexes = new int*[bmiHeader.biHeight];
+        arrIndexes = new unsigned char*[bmiHeader.biHeight];
         for (int i = 0; i < bmiHeader.biHeight; i++)
-            arrIndexes[i] = new int[bmiHeader.biWidth];
+            arrIndexes[i] = new unsigned char[bmiHeader.biWidth];
 
         for (int i = 0; i < bmiHeader.biHeight; i++) {
             for (int j = 0; j < bmiHeader.biWidth; j++) {
-                arrIndexes[i][j] = getc(pFile);
+                arrIndexes[i][j] = static_cast<unsigned char>(getc(pFile));
             }
             // пропускаем последний байт в строке
             // getc(pFile);
@@ -110,6 +110,7 @@ public:
 
     int get_Width() { return bmiHeader.biWidth; }
     int get_Height() { return bmiHeader.biHeight; }
+    int get_SizeImage() { return bmiHeader.biSizeImage; }
 
 };
 
@@ -122,7 +123,8 @@ public:
     void Message();
     ~MainWindow();
     FileBMP* fBMP;
-//    void Draw();
+    QImage paint_image(unsigned char** data, int width, int height);
+    QImage paint_bar_chart(unsigned char** data, int width, int height);
 
 protected:
     void paintEvent(QPaintEvent *);

@@ -51,27 +51,68 @@ MainWindow::~MainWindow()
 //    view->show();
 //}
 
-void MainWindow::paintEvent(QPaintEvent *)
+QImage MainWindow::paint_image(unsigned char** data, int width, int height)
 {
-//    unsigned char* color =  new unsigned char[256];
-//    for (int i = 0; i < 256; i++)
-//    {
-//        color[i] = static_cast<unsigned char>(i);
-//    }
+    QImage image(width, height, QImage::Format_RGB888);
 
-    unsigned char* data =  new unsigned char[256];
-    for (int i = 0; i < 256; i++)
+    for(int i = 0; i < height; i++)
     {
-        data[i] = static_cast<unsigned char>(i);
+        for(int j = 0; j < width; j++)
+        {
+            unsigned char color = data[i][j];
+            image.setPixel(j, i, qRgb(color, color, color));
+        }
+    }
+    return image;
+}
+
+QImage MainWindow::paint_bar_chart(unsigned char** data, int width, int height)
+{
+    uint hist[256];
+    uint max_value = 0;
+
+    for(int i = 0; i < 256; i++)
+    {
+        hist[i] = 0;
     }
 
+    for(int i = 0; i < height; i++)
+    {
+        for(int j = 0; j < width; j++)
+        {
+            hist[data[i][j]]++;
+        }
+    }
+
+    for(int i = 0; i < 256; i++)
+        if(hist[i] > max_value)
+            max_value = hist[i];
+
+    QImage image(1024, 256, QImage::Format_RGB888);
+    image.fill(qRgb(255, 255, 255));
+    for(int i = 0; i < 1024; i+=4)
+    {
+        for(int j = 0; j < round((double)hist[i/4] / ((double)max_value / 256.0)); j++)
+        {
+            image.setPixel(i, 256 - 1 - j, qRgb(0, 0, 255));
+            image.setPixel(i+1, 256 - 1 - j, qRgb(0, 0, 255));
+            image.setPixel(i+2, 256 - 1 - j, qRgb(0, 0, 255));
+            image.setPixel(i+3, 256 - 1 - j, qRgb(0, 0, 255));
+        }
+    }
+
+    return image;
+}
+
+void MainWindow::paintEvent(QPaintEvent *)
+{
     QPainter painter;
-     painter.begin(this);
-     QImage img(fBMP->get_Width(), fBMP->get_Height(), QImage::Format_RGB888);
-     for (int i = 0; i < fBMP->get_Height(); i++) {
-         for (int j = 0; j < fBMP->get_Width(); j++) {
-             unsigned char color = fBMP->arrIndexes[i][j];
-             img.setPixel(j, i, qRgb(color, color, color));
+    painter.begin(this);
+    QImage img(fBMP->get_Width(), fBMP->get_Height(), QImage::Format_RGB888);
+    for (int i = 0; i < fBMP->get_Height(); i++) {
+        for (int j = 0; j < fBMP->get_Width(); j++) {
+            unsigned char color = fBMP->arrIndexes[i][j];
+            img.setPixel(j, i, qRgb(color, color, color));
       }
      }
      painter.drawImage(0,0,img);
