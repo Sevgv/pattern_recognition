@@ -3,6 +3,9 @@
 
 #include <QMainWindow>
 #include "bmpstruct.h"
+#include <iostream>
+
+using namespace std;
 
 namespace Ui {
 class MainWindow;
@@ -105,12 +108,11 @@ public:
             // getc(pFile);
             // getc(pFile);
         }
-
     }
 
     int get_Width() { return bmiHeader.biWidth; }
     int get_Height() { return bmiHeader.biHeight; }
-    int get_SizeImage() { return bmiHeader.biSizeImage; }
+    uint get_SizeImage() { return bmiHeader.biSizeImage; }
 
 };
 
@@ -120,14 +122,15 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    void Message();
     ~MainWindow();
+    void Message();
     FileBMP* fBMP;
     QImage paint_image(unsigned char** data, int width, int height);
     QImage paint_bar_chart(unsigned char** data, int width, int height);
 
 protected:
     void paintEvent(QPaintEvent *);
+    void keyPressEvent(QKeyEvent *event);
 
 private:
     Ui::MainWindow *ui;
