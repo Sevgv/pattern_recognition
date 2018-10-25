@@ -111,14 +111,14 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
     int key = event->key();
     if (key == Qt::Key_Escape) {
-        if (graphicsView_scene_img != nullptr && graphicsView_scene_bar_chart != nullptr)
-        {
-            graphicsView_scene_img->close();
-            graphicsView_scene_bar_chart->close();
-        }
-        this->close();
+        QApplication::quit();
      }
     if (key == Qt::Key_Space) {
+
+        QAction* exitAction=new QAction(tr("Exit"), qApp);
+        exitAction->setShortcut(Qt::Key_Escape);
+        connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+
         QImage *img = new QImage(paint_image(fBMP->arrIndexes, fBMP->get_Width(), fBMP->get_Height()));
         QImage *bar_chart = new QImage(paint_bar_chart(fBMP->arrIndexes, fBMP->get_Width(), fBMP->get_Height()));
 
@@ -129,14 +129,21 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         scene_bar_chart->addPixmap(QPixmap::fromImage(*bar_chart))->setPos(0, 0);
 
         graphicsView_scene_img = new QGraphicsView(scene_img);
+        graphicsView_scene_img->addAction(exitAction);
+
         graphicsView_scene_bar_chart = new QGraphicsView(scene_bar_chart);
+        graphicsView_scene_bar_chart->addAction(exitAction);
 
         graphicsView_scene_img->move(fBMP->get_Width() + 16, 0);
         graphicsView_scene_img->show();
 
+
         graphicsView_scene_bar_chart->move(0, fBMP->get_Height() + 38);
         graphicsView_scene_bar_chart->show();
+
      }
+
+
 }
 
 void MainWindow::paintEvent(QPaintEvent *)

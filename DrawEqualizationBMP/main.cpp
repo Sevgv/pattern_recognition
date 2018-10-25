@@ -2,6 +2,8 @@
 #include <QApplication>
 #include <QGraphicsView>
 #include <QGraphicsPixmapItem>
+#include <QAction>
+
 
 int main(int argc, char *argv[])
 {
