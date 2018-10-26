@@ -126,7 +126,9 @@ public:
     void Message();
     FileBMP* fBMP;
     QImage paint_image(unsigned char** data, int width, int height);
-    QImage paint_bar_chart(unsigned char** data, int width, int height);
+    QImage paint_hist(unsigned char** data, int width, int height);
+    QImage paint_equliz_hist(unsigned char** data, int width, int height);
+    QImage paint_equliz_image(unsigned char** data, int width, int height);
 
 protected:
     void paintEvent(QPaintEvent *);
