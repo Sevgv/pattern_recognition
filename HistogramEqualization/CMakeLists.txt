@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 2.8)
+project( HistogramEqualization )
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+add_executable( HistogramEqualization histogram_equalization.cpp )
+target_link_libraries( HistogramEqualization ${OpenCV_LIBS} )

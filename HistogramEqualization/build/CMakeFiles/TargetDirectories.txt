@@ -1,0 +1,3 @@
+C:/Users/Gleb/Documents/OpenCV_Projects/HistogramEqualization/build/CMakeFiles/HistogramEqualization.dir
+C:/Users/Gleb/Documents/OpenCV_Projects/HistogramEqualization/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/Gleb/Documents/OpenCV_Projects/HistogramEqualization/build/CMakeFiles/ZERO_CHECK.dir
