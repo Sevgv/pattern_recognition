@@ -11,7 +11,8 @@ int main(int argc, char *argv[])
     MainWindow w;
 
     FILE *pFile;
-    errno_t e = fopen_s(&pFile, "F1_7.bmp", "rb");
+//    errno_t e = fopen_s(&pFile, "F1_7.bmp", "rb");
+        errno_t e = fopen_s(&pFile, "F00027_21.bmp", "rb");
     if (e)
     {
         w.Message();

@@ -108,7 +108,11 @@ public:
             // getc(pFile);
             // getc(pFile);
         }
+
+        if (bmiHeader.biSizeImage == 0)
+            bmiHeader.biSizeImage = bmiHeader.biWidth*bmiHeader.biHeight;
     }
+
 
     int get_Width() { return bmiHeader.biWidth; }
     int get_Height() { return bmiHeader.biHeight; }
