@@ -160,6 +160,31 @@ void image_to_smoothed(const vector<unsigned char>& original_image,
     }
 }
 
+vector<unsigned char> subtract(const vector<unsigned char>& original_image,
+              vector<unsigned char>& smoothed_data)
+{
+    vector<int> temp(original_image.size());
+    for(int i = 0; i < original_image.size(); i++)
+    {
+        temp[i] = smoothed_data[i] - original_image[i];
+    }
+
+    for(int i = 0; i < temp.size(); i++)
+    {
+        if(temp[i] < 0)
+            temp[i] = 0;
+        temp[i] = static_cast<unsigned char>(temp[i]);
+    }
+
+    vector<unsigned char> subtract_data(temp.size());
+    for (int i = 0; i < temp.size(); i++)
+    {
+        subtract_data[i] = temp[i];
+    }
+
+    return subtract_data;
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -185,7 +210,16 @@ int main(int argc, char *argv[])
     QImage original_dist = data_to_image(original_dist_data, 256);
 
     vector<unsigned char> smoothed_data;
-    image_to_smoothed(original_data, smoothed_data, width, 3);
+    image_to_smoothed(original_data, smoothed_data, width, 100);
+
+    vector<unsigned char> subtract_data = subtract(original_data, smoothed_data);
+    uint32_t subtract_hist_data[256];
+    unsigned char subtract_dist_data[256];
+    image_to_hist(subtract_data, subtract_hist_data);
+    hist_to_dist(subtract_hist_data, subtract_dist_data);
+    QImage subtract_image = bmp_to_image(subtract_data, width, height);
+    QImage subtract_hist = hist_to_image(subtract_data);
+    QImage subtract_dist = data_to_image(subtract_dist_data, 256);
 
     uint32_t smoothed_hist_data[256];
     unsigned char smoothed_dist_data[256];
@@ -216,6 +250,10 @@ int main(int argc, char *argv[])
         flag = false;
     }
 
+    scene.addPixmap(QPixmap::fromImage(subtract_image))->setPos(0, height+256);
+    scene.addPixmap(QPixmap::fromImage(subtract_hist))->setPos(0, height*2+256);
+    scene.addPixmap(QPixmap::fromImage(subtract_dist))->setPos(256, height*2+256);
+
     QGraphicsView graphicsView(&scene);
     graphicsView.addAction(exitAction);
     if (!flag)
@@ -223,7 +261,7 @@ int main(int argc, char *argv[])
     else
         graphicsView.setGeometry(QRect(0, 0, 1024, height+256));
 
-    graphicsView.show();
+    graphicsView.showMaximized();
 
 //    MainWindow w;
 //    w.show();
