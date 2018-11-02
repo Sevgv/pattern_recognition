@@ -12,8 +12,8 @@ int main(int argc, char *argv[])
 
     FILE *pFile;
 //    errno_t e = fopen_s(&pFile, "F1_7.bmp", "rb");
-//    errno_t e = fopen_s(&pFile, "F00027_21.bmp", "rb");
-    errno_t e = fopen_s(&pFile, "F00022_06.bmp", "rb");
+    errno_t e = fopen_s(&pFile, "F00027_21.bmp", "rb");
+//    errno_t e = fopen_s(&pFile, "F00022_06.bmp", "rb");
     if (e)
     {
         w.Message();

@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
     QImage original_dist = data_to_image(original_dist_data, 256);
 
     vector<unsigned char> smoothed_data;
-    image_to_smoothed(original_data, smoothed_data, width, 100);
+    image_to_smoothed(original_data, smoothed_data, width, 3);
 
     vector<unsigned char> subtract_data = subtract(original_data, smoothed_data);
     uint32_t subtract_hist_data[256];
