@@ -130,10 +130,21 @@ unsigned char average_value(const vector<unsigned char>& original_image, int ind
 
     for(int i = 0; i < size*width; i+=width)
     {
+        int a = i;
+        i = i - (int)(size/2);
         for(int j = 0; j < size; j++)
         {
-            value += original_image[i+j+index];
+            int b = j;
+            j = j - (int)(size/2);
+            int x = i+j+index;
+            if (x < 0)
+                x = 0;
+            if (x > original_image.size() - 1)
+                x = original_image.size() - 1;
+            value += original_image[x];
+            j = b;
         }
+        i = a;
     }
 
     value = round((double)(value/(size*size)));
@@ -210,7 +221,7 @@ int main(int argc, char *argv[])
     QImage original_dist = data_to_image(original_dist_data, 256);
 
     vector<unsigned char> smoothed_data;
-    image_to_smoothed(original_data, smoothed_data, width, 3);
+    image_to_smoothed(original_data, smoothed_data, width, 3); // smooth
 
     vector<unsigned char> subtract_data = subtract(original_data, smoothed_data);
     uint32_t subtract_hist_data[256];
