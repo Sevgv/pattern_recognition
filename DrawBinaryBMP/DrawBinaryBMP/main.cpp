@@ -133,6 +133,19 @@ public:
 		return -1;
 	}
 
+	int contrast_color3(int color)
+	{
+		if (color >= 0 && color <= 255)
+		{
+			double temp = 0;
+			temp = 16*sqrt(color);
+			if (temp < 0)
+				return -1;
+			return static_cast<int>(round(temp));
+		}
+		return -1;
+	}
+
 
 	void init(FILE *pFile)
 	{
@@ -345,14 +358,14 @@ LRESULT WINAPI ChildProc(HWND hWnd, UINT Message, WPARAM wparam, LPARAM lparam)
 			colorBlack[i] = RGB(0, 0, 0);
 		}
 
-		// if(fBMP->contrast_color(fBMP->Palette[i].rgbReserved) == -1)
-		// {
-		// 	int a = 0;
-		// }
-  //
-		// int color = fBMP->contrast_color(fBMP->Palette[i].rgbReserved);
-  //
-		// colorBlack[i] = RGB(color, color, color);
+		 // if(fBMP->contrast_color(fBMP->Palette[i].rgbReserved) == -1)
+		 // {
+		 // 	int a = 0;
+		 // }
+   //
+		 // int color = fBMP->contrast_color(fBMP->Palette[i].rgbReserved);
+   //
+		 // colorBlack[i] = RGB(color, color, color);
 		
 	}
 
