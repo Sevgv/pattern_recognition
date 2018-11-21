@@ -146,6 +146,19 @@ public:
 		return -1;
 	}
 
+	int negative_color(int color)
+	{
+		if (color >= 0 && color <= 255)
+		{
+			double temp = 0;
+			temp = 255 - color;
+			if (temp < 0)
+				return -1;
+			return static_cast<int>(round(temp));
+		}
+		return -1;
+	}
+
 
 	void init(FILE *pFile)
 	{
@@ -349,23 +362,23 @@ LRESULT WINAPI ChildProc(HWND hWnd, UINT Message, WPARAM wparam, LPARAM lparam)
 	COLORREF* colorBlack = new COLORREF[256];
 	for (int i = 0; i < 256; i++)
 	{
-		if (fBMP->bynary_color(fBMP->Palette[i].rgbRed, fBMP->Palette[i].rgbGreen, fBMP->Palette[i].rgbBlue))
-		{
-			colorBlack[i] = RGB(255, 255, 255);
-		}
-		else
-		{
-			colorBlack[i] = RGB(0, 0, 0);
-		}
+		// if (fBMP->bynary_color(fBMP->Palette[i].rgbRed, fBMP->Palette[i].rgbGreen, fBMP->Palette[i].rgbBlue))
+		// {
+		// 	colorBlack[i] = RGB(255, 255, 255);
+		// }
+		// else
+		// {
+		// 	colorBlack[i] = RGB(0, 0, 0);
+		// }
 
-		 // if(fBMP->contrast_color(fBMP->Palette[i].rgbReserved) == -1)
-		 // {
-		 // 	int a = 0;
-		 // }
-   //
-		 // int color = fBMP->contrast_color(fBMP->Palette[i].rgbReserved);
-   //
-		 // colorBlack[i] = RGB(color, color, color);
+		  if(fBMP->negative_color(fBMP->Palette[i].rgbReserved) == -1)
+		  {
+		  	int a = 0;
+		  }
+   
+		  int color = fBMP->negative_color(fBMP->Palette[i].rgbReserved);
+   
+		  colorBlack[i] = RGB(color, color, color);
 		
 	}
 
