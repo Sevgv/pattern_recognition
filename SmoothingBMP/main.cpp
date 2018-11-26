@@ -124,30 +124,51 @@ void hist_to_dist(uint32_t hist[256], uint8_t dist[256])
     }
 }
 
-unsigned char average_value(const vector<unsigned char>& original_image, int index, int size, uint32_t width)
+unsigned char average_value(const vector<unsigned char>& original_image, int index, int size, uint32_t width, uint32_t height)
 {
+    if (size%2 == 0)
+        size++;
+    int p_h = 0;
+    int p_w = 0;
+    int p_hx = 0;
+    int p_wx = 0;
+    int x = 0;
+
+    p_h = index/width;
+    p_w = index % width;
+
+
     int value = 0;
+    int t = 0;
 
     for(int i = 0; i < size*width; i+=width)
     {
         int a = i;
-        i = i - (int)(size/2);
+        i = i  - ((int)(size/2)*width);
         for(int j = 0; j < size; j++)
         {
             int b = j;
             j = j - (int)(size/2);
-            int x = i+j+index;
-            if (x < 0)
-                x = 0;
-            if (x > original_image.size() - 1)
-                x = original_image.size() - 1;
-            value += original_image[x];
+            x = i+j+index;
+
+            p_hx = x/width;
+            p_wx = x%width;
+
+//            if (x < 0)
+//                x = 0;
+//            if (x > original_image.size() - 1)
+//                x = original_image.size() - 1;
+            if (abs(p_h - p_hx) <= (int)(size/2) && abs(p_w - p_wx) <= (int)(size/2) && p_hx < height)
+            {
+                value += original_image[x];
+                t++;
+            }
             j = b;
         }
         i = a;
     }
 
-    value = round((double)(value/(size*size)));
+    value = round((double)(value/t));
 
     return (unsigned char)value;
 }
@@ -155,7 +176,7 @@ unsigned char average_value(const vector<unsigned char>& original_image, int ind
 
 void image_to_smoothed(const vector<unsigned char>& original_image,
                        vector<unsigned char>& smoothed_data,
-                       uint32_t width, int size)
+                       uint32_t width, uint32_t height, int size)
 {
     smoothed_data.resize(original_image.size());
 
@@ -166,7 +187,7 @@ void image_to_smoothed(const vector<unsigned char>& original_image,
 //            smoothed_data[i] = round((double)(original_image[i] + original_image[i+1] + original_image[i+2] +
 //                                original_image[i+width]+ original_image[i+width+1] + original_image[i+width+2] +
 //                                original_image[i+(2*width)] + original_image[i+(2*width)+1] + original_image[i+(2*width)+2])/9);
-        smoothed_data[i] = average_value(original_image, i, size, width);
+        smoothed_data[i] = average_value(original_image, i, size, width, height);
 //        }
     }
 }
@@ -221,7 +242,7 @@ int main(int argc, char *argv[])
     QImage original_dist = data_to_image(original_dist_data, 256);
 
     vector<unsigned char> smoothed_data;
-    image_to_smoothed(original_data, smoothed_data, width, 3); // smooth
+    image_to_smoothed(original_data, smoothed_data, width, height, 5); // smooth
 
     vector<unsigned char> subtract_data = subtract(original_data, smoothed_data);
     uint32_t subtract_hist_data[256];
@@ -244,26 +265,26 @@ int main(int argc, char *argv[])
     QGraphicsScene scene;
     scene.addPixmap(QPixmap::fromImage(original_image))->setPos(0, 0);
     scene.addPixmap(QPixmap::fromImage(original_hist))->setPos(0, height);
-    scene.addPixmap(QPixmap::fromImage(original_dist))->setPos(256, height);
+//    scene.addPixmap(QPixmap::fromImage(original_dist))->setPos(256, height);
 
     bool flag = true;
     if(width >= 512)
     {
         scene.addPixmap(QPixmap::fromImage(smoothed_image))->setPos(width, 0);
         scene.addPixmap(QPixmap::fromImage(smoothed_hist))->setPos(width, height);
-        scene.addPixmap(QPixmap::fromImage(smoothed_dist))->setPos(width + 256, height);
+//        scene.addPixmap(QPixmap::fromImage(smoothed_dist))->setPos(width + 256, height);
     }
     else
     {
         scene.addPixmap(QPixmap::fromImage(smoothed_image))->setPos(512, 0);
         scene.addPixmap(QPixmap::fromImage(smoothed_hist))->setPos(512, height);
-        scene.addPixmap(QPixmap::fromImage(smoothed_dist))->setPos(512+256, height);
+//        scene.addPixmap(QPixmap::fromImage(smoothed_dist))->setPos(512+256, height);
         flag = false;
     }
 
     scene.addPixmap(QPixmap::fromImage(subtract_image))->setPos(0, height+256);
     scene.addPixmap(QPixmap::fromImage(subtract_hist))->setPos(0, height*2+256);
-    scene.addPixmap(QPixmap::fromImage(subtract_dist))->setPos(256, height*2+256);
+//    scene.addPixmap(QPixmap::fromImage(subtract_dist))->setPos(256, height*2+256);
 
     QGraphicsView graphicsView(&scene);
     graphicsView.addAction(exitAction);
