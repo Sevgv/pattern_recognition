@@ -379,3 +379,4 @@ target_wrapper.*
 CMakeLists.txt.user*
 
 *_build*
+!*.bmp
