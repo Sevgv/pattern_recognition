@@ -15,23 +15,23 @@ void read_bmp(const string& fileName, vector<unsigned char>& out_data, uint32_t&
     uint8_t headers[headers_size];
 
     ifstream file(fileName, std::ios::binary);
-    file.read((char*)headers, headers_size);
+    file.read(reinterpret_cast<char*>(headers), headers_size);
 
-    uint32_t fileSize = *((uint32_t*)&headers[0x02]);
-    uint32_t dataOffset = *((uint32_t*)&headers[0x0A]);
-    int32_t width = *((int32_t*)&headers[0x12]);
-    int32_t height = *((int32_t*)&headers[0x16]);
-    uint32_t imageSize = *((uint32_t*)&headers[0x22]);
+    uint32_t fileSize = *(reinterpret_cast<uint32_t*>(&headers[0x02]));
+    uint32_t dataOffset = *(reinterpret_cast<uint32_t*>(&headers[0x0A]));
+    int32_t width = *(reinterpret_cast<int32_t*>(&headers[0x12]));
+    int32_t height = *(reinterpret_cast<int32_t*>(&headers[0x16]));
+    uint32_t imageSize = *(reinterpret_cast<uint32_t*>(&headers[0x22]));
 
-    out_width = abs(width);
-    out_height = abs(height);
+    out_width = static_cast<uint32_t>(abs(width));
+    out_height = static_cast<uint32_t>(abs(height));
 
     if(imageSize == 0)
         imageSize = out_height * out_width;
 
     out_data.resize(imageSize);
     file.seekg(dataOffset);
-    file.read((char*)out_data.data(), imageSize);
+    file.read(reinterpret_cast<char*>(out_data.data()), imageSize);
 }
 
 QImage bmp_to_image(const std::vector<unsigned char>& data, uint32_t width, uint32_t height)
@@ -78,7 +78,7 @@ void ft(const std::vector<std::complex<double>>& data, std::vector<std::complex<
         {
             sum += data[x] * pow(-1,x)* std::complex<double>(cos((2.0 * M_PI * u * x) / data.size()), -sin((2.0 * M_PI * u * x) / data.size()));
         }
-        result[u] = sum / (double)data.size();
+        result[u] = sum /static_cast<double>(data.size());
     }
 }
 
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
             max_value = ft_en[i];
 
     for(int i = 0; i < ft_en.size(); i++)
-        slice_data_real[i] = (unsigned char)(ft_en[i] / max_value * 255);
+        slice_data_real[i] = static_cast<unsigned char>(ft_en[i] / max_value * 255);
 
     QImage ft_hist_image = array_to_hist(slice_data_real);
 
