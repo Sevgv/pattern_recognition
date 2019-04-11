@@ -5,8 +5,8 @@
 #include <vector>
 #include <iostream>
 
-template<typename I, typename EmptyTest, typename EmptyValue>
-uint32_t __skelet_count_neighbours(const I& image, int32_t x, int32_t y, const EmptyTest& empty_test, const EmptyValue& empty_value)
+template<typename EmptyTest>
+uint32_t __skelet_count_neighbours(const Image& image, int32_t x, int32_t y, const EmptyTest& empty_test, const uint8_t& empty_value)
 {
     uint32_t count = 0;
     for(int32_t i = -1; i <= 1; i++)
@@ -35,15 +35,15 @@ struct point
     {}
 };
 
-template<typename I, typename EmptyTest, typename EmptyValue>
-uint32_t __skelet_count_0_1_transitions(const I& image, std::vector<point> pattern, const EmptyTest& empty_test, const EmptyValue& empty_value, int32_t x, int32_t y)
+template<typename EmptyTest>
+uint32_t __skelet_count_0_1_transitions(const Image& image, std::vector<point> pattern, const EmptyTest& empty_test, const uint8_t& empty_value, int32_t x, int32_t y)
 {
     uint32_t count = 0;
-    typename I::element_t last = image.element_or(x + pattern[0].x, y + pattern[0].y, empty_value);
+    uint8_t last = image.element_or(x + pattern[0].x, y + pattern[0].y, empty_value);
 
     for(uint32_t index = 1; index < pattern.size(); index++)
     {
-        typename I::element_t current = image.element_or(x + pattern[index].x, y + pattern[index].y, empty_value);
+        uint8_t current = image.element_or(x + pattern[index].x, y + pattern[index].y, empty_value);
 
         if(empty_test(last) && !empty_test(current))
             count++;
@@ -53,10 +53,10 @@ uint32_t __skelet_count_0_1_transitions(const I& image, std::vector<point> patte
     return count;
 }
 
-template<typename I, typename EmptyTest, typename EmptyValue>
-auto skelet(const I& original_image, const EmptyTest& empty_test, const EmptyValue& empty_value) -> Image<typename I::element_t>
+template<typename EmptyTest>
+auto skelet(const Image& original_image, const EmptyTest& empty_test, const uint8_t& empty_value) -> Image
 {
-    I image = original_image.clone();
+    Image image = original_image.clone();
 
     const std::vector<point> transition_counter_pattern =
     {

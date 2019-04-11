@@ -51,9 +51,9 @@ QImage bmp_to_image(const vector<unsigned char>& data, uint32_t width, uint32_t 
 }
 
 template<typename I>
-Image<uint8_t> binary_image(const I& image, typename I::element_t threshold)
+Image binary_image(const I& image, uint8_t threshold)
 {
-    Image<uint8_t> result(image.width(), image.height());
+    Image result(image.width(), image.height());
     for(int32_t i = 0; i < image.size(); i++)
     {
         result.element(i) = image.element(i) > threshold ? 255 : 0;
@@ -77,7 +77,7 @@ uint i2q_conv_func(const uint8_t& e)
     return qRgb(e, e, e);
 }
 
-QImage image_to_qImage(const Image<uint8_t>& image)
+QImage image_to_qImage(const Image& image)
 {
     QImage::Format format = QImage::Format_RGB888;
     QImage qImage(image.width(), image.height(), format);
@@ -92,9 +92,9 @@ QImage image_to_qImage(const Image<uint8_t>& image)
 }
 
 
-Image<uint8_t> qImage_to_image(const QImage& qImage)
+Image qImage_to_image(const QImage& qImage)
 {
-    Image<uint8_t> image(qImage.width(), qImage.height());
+    Image image(qImage.width(), qImage.height());
     for(int32_t x = 0; x < qImage.width(); x++)
         for(int32_t y = 0; y < qImage.height(); y++)
             image.element(x, y) = q2i_conv_func_color(qImage, x, y);
@@ -115,12 +115,12 @@ int main(int argc, char *argv[])
 
     QImage original_image = bmp_to_image(original_data, width, height);
 
-    Image<uint8_t> image = qImage_to_image(original_image);
+    Image image = qImage_to_image(original_image);
 
-    Image<uint8_t> binaryImage = binary_image(image, 120);
+    Image binaryImage = binary_image(image, 120);
     QImage qBinaryImage = image_to_qImage(binaryImage);
 
-    Image<uint8_t> skeletImage = skelet(binaryImage, [](uint8_t v) {return v == 255;}, 255);
+    Image skeletImage = skelet(binaryImage, [](uint8_t v) {return v == 255;}, 255);
     QImage qSkeletImage = image_to_qImage(skeletImage);
 
     QGraphicsScene scene;
