@@ -10,46 +10,6 @@
 
 using namespace std;
 
-void read_bmp(const string& fileName, vector<unsigned char>& out_data, uint32_t& out_width, uint32_t& out_height)
-{
-    const uint32_t headers_size = 54;
-    uint8_t headers[headers_size];
-
-    ifstream file(fileName, std::ios::binary);
-    file.read((char*)headers, headers_size);
-
-    uint32_t fileSize = *((uint32_t*)&headers[0x02]);
-    uint32_t dataOffset = *((uint32_t*)&headers[0x0A]);
-    int32_t width = *((int32_t*)&headers[0x12]);
-    int32_t height = *((int32_t*)&headers[0x16]);
-    uint32_t imageSize = *((uint32_t*)&headers[0x22]);
-
-    out_width = abs(width);
-    out_height = abs(height);
-
-    if(imageSize == 0)
-        imageSize = out_height * out_width;
-
-    out_data.resize(imageSize);
-    file.seekg(dataOffset);
-    file.read((char*)out_data.data(), imageSize);
-}
-
-QImage bmp_to_image(const vector<unsigned char>& data, uint32_t width, uint32_t height)
-{
-    QImage image(width, height, QImage::Format_RGB888);
-
-    for(uint32_t i = 0; i < width; i++)
-    {
-        for(uint32_t j = 0; j < height; j++)
-        {
-            unsigned char color = data[j * width + i];
-            image.setPixel(i, j, qRgb(color, color, color));
-        }
-    }
-    return image;
-}
-
 template<typename I>
 Image binary_image(const I& image, uint8_t threshold)
 {
@@ -65,12 +25,6 @@ uint8_t q2i_conv_func_color(const QImage& qImage, int32_t x, int32_t y)
 {
     return static_cast<uint8_t>(qImage.pixelColor(x, y).red());
 }
-
-//uint8_t q2i_conv_func(const QImage& qImage, int32_t x, int32_t y)
-//{
-//    return static_cast<uint8_t>(qImage.pixelIndex(x, y));
-//}
-
 
 uint i2q_conv_func(const uint8_t& e)
 {
@@ -109,11 +63,7 @@ int main(int argc, char *argv[])
     exitAction->setShortcut(Qt::Key_Escape);
     QObject::connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
 
-    std::vector<unsigned char> original_data;
-    uint32_t width, height;
-    read_bmp("../F1_7.bmp", original_data, width, height);
-
-    QImage original_image = bmp_to_image(original_data, width, height);
+    QImage original_image("../F1_7.bmp");
 
     Image image = qImage_to_image(original_image);
 
