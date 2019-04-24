@@ -23,18 +23,6 @@ uint32_t __skelet_count_neighbours(const Image& image, int32_t x, int32_t y, con
     return count;
 }
 
-struct point
-{
-    int32_t x, y;
-    point(int32_t _x, int32_t _y)
-        : x(_x), y(_y)
-    {}
-
-    point()
-        : x(0), y(0)
-    {}
-};
-
 template<typename EmptyTest>
 uint32_t __skelet_count_0_1_transitions(const Image& image, std::vector<point> pattern, const EmptyTest& empty_test, const uint8_t& empty_value, int32_t x, int32_t y)
 {
