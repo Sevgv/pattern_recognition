@@ -8,6 +8,9 @@
 #include <functional>
 #include <QAction>
 #include <math.h>
+#include <QSet>
+#include <QDebug>
+#include <optional>
 
 struct point
 {
@@ -263,6 +266,84 @@ public:
             }
 
         return clean_img;
+    }
+
+    Image fragment(const Image& image, const uint8_t& value)
+    {
+        Image _fragmentImage(value, value);
+        for(int32_t x = 0; x < value; x++)
+            for(int32_t y = 0; y < value; y++)
+            {
+                _fragmentImage.element(x, y) = image.element(x, y);
+            }
+        return _fragmentImage;
+    }
+
+    QPoint find_blackPoint(const Image& _fragmentImage)
+    {
+        for(int32_t x = 0; x < _fragmentImage.width(); x++)
+            for(int32_t y = 0; y < _fragmentImage.height(); y++)
+            {
+                if(_fragmentImage.element_or(x, y, 255) == 0)
+                {
+                    qDebug() <<  "found black point(" << x << "," << y << ")";
+                    return QPoint(x, y);
+                }
+            }
+        qDebug() <<  "selected empty point";
+        return QPoint(0, 0);
+    }
+
+    void chained_code(const Image& _fragmentImage, QPoint initial_point)
+    {
+        if(_fragmentImage.element_or(initial_point.x(), initial_point.y(), 255) == 255)
+        {
+            qDebug() <<  "selected empty point";
+            return;
+        }
+
+        const std::vector<QPoint> neighbours_pattern =
+        {
+            QPoint(1, 0), QPoint(1, 1),
+            QPoint(0, 1), QPoint(-1, 1),
+            QPoint(-1, 0), QPoint(-1, -1),
+            QPoint(0, -1), QPoint(1, -1)
+        };
+
+        std::vector<QPoint> visited;
+        visited.push_back(initial_point);
+        QPoint current = initial_point;
+        QPoint next = {};
+        uint32_t neighbour_index = 0;
+        QString code;
+
+        for(int32_t counter = 0; counter < 1000; counter++)
+        {
+            for(uint32_t i = 0; i < neighbours_pattern.size(); i++)
+            {
+                const QPoint& n = neighbours_pattern[i];
+
+                if(_fragmentImage.element_or(current.x() + n.x(), current.y() + n.y(), 255) == 0 && !(std::find(visited.begin(), visited.end(), current + n) != visited.end()))
+                {
+                    next = current + n;
+                    neighbour_index = i;
+                    break;
+                }
+            }
+
+            if(_fragmentImage.element_or(next.x(), next.y(), 255) == 255)
+            {
+                qDebug() <<  "no points left";
+                break;
+            }
+
+            current = next;
+            next = {};
+            visited.push_back(current);
+            code += QString::number(neighbour_index);
+        }
+
+        qDebug() << code <<  '\n';
     }
 };
 
