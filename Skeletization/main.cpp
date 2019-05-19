@@ -29,12 +29,14 @@ int main(int argc, char *argv[])
     Image skeletImage = skelet(binaryImage, [](uint8_t v) {return v == 255;}, 255);  
     QImage qSkeletImage = io->image_to_qImage(skeletImage);
 
-    Image cleanImage = io->filtration(skeletImage, [](uint8_t v) {return v == 255;}, 255);
-//    Image cleanImageTwo = io->filtration(cleanImage, [](uint8_t v) {return v == 255;}, 255);
+    Image __cleanImage = io->filter_short_branches(skeletImage, 5, 255);
+    Image _cleanImage = io->filter_useless_points_new(__cleanImage, 255);
+    Image cleanImage = io->filter_short_spikes(_cleanImage, 5, 255);
+
 
     QImage qCleanImage = io->image_to_qImage(cleanImage);
 
-    Image fragmentImage = io->fragment(cleanImage, 100);
+    Image fragmentImage = io->fragment(cleanImage, 200);
     QPoint initial_point = io->find_blackPoint(fragmentImage);
     io->chained_code(fragmentImage, initial_point);
 
@@ -49,7 +51,7 @@ int main(int argc, char *argv[])
     scene.addPixmap(QPixmap::fromImage(qBinaryImage))->setPos(original_image.width(), 0);
     scene.addPixmap(QPixmap::fromImage(qSkeletImage))->setPos(original_image.width() + qBinaryImage.width(), 0);
     scene.addPixmap(QPixmap::fromImage(qCleanImage))->setPos(original_image.width() + qBinaryImage.width() + qSkeletImage.width(), 0);
-    scene.addPixmap(QPixmap::fromImage(qFragmentImage))->setPos(0, original_image.height());
+    scene.addPixmap(QPixmap::fromImage(qFragmentImage))->setPos(original_image.width() + qBinaryImage.width() + qSkeletImage.width(), original_image.height());
 
     QGraphicsView graphicsView(&scene);
     graphicsView.addAction(exitAction);

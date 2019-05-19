@@ -12,6 +12,16 @@
 #include <QDebug>
 #include <optional>
 
+inline uint qHash (const QPoint & key)
+{
+return qHash (QPair<int,int>(key.x(), key.y()) );
+}
+
+inline bool operator<(const QPoint& a, const QPoint& b)
+{
+return qHash(a) < qHash(b);
+}
+
 struct point
 {
     int32_t x, y;
@@ -210,63 +220,7 @@ public:
             for(int32_t y = 0; y < qImage.height(); y++)
                 image.element(x, y) = q2i_conv_func_color(qImage, x, y);
         return image;
-    }
-
-    template<typename EmptyTest>
-    Image filtration(const Image& image, const EmptyTest& empty_test, const uint8_t& empty_value)
-    {
-        const std::vector<point> frame =
-        {
-            point(-3, -3), point(-2, -3), point(-1, -3), point(0, -3), point(1, -3), point(2, -3), point(3, -3),
-            point(-3, -2),/* ___________________________________________________________________*/ point(3, -2),
-            point(-3, -1),/* ___________________________________________________________________*/ point(3, -1),
-            point(-3, 0),/* _____________________________________________________________________*/ point(3, 0),
-            point(-3, 1),/* _____________________________________________________________________*/ point(3, 1),
-            point(-3, 2),/* _____________________________________________________________________*/ point(3, 2),
-            point(-3, 3), point(-2, 3),   point(-1, 3),  point(0, 3),  point(1, 3),  point(2, 3),   point(3, 3)
-        };
-
-        const std::vector<point> mask =
-        {
-            point(-3, -3), point(-2, -3), point(-1, -3), point(0, -3), point(1, -3), point(2, -3), point(3, -3),
-            point(-3, -2), point(-2, -2), point(-1, -2), point(0, -2), point(1, -2), point(2, -2), point(3, -2),
-            point(-3, -1), point(-2, -1), point(-1, -1), point(0, -1), point(1, -1), point(2, -1), point(3, -1),
-            point(-3, 0), point(-2, 0), point(-1, 0), point(0, 0), point(1, 0), point(2, 0), point(3, 0),
-            point(-3, 1), point(-2, 1), point(-1, 1), point(0, 1), point(1, 1), point(2, 1), point(3, 1),
-            point(-3, 2), point(-2, 2), point(-1, 2), point(0, 2), point(1, 2), point(2, 2), point(3, 2),
-            point(-3, 3), point(-2, 3), point(-1, 3), point(0, 3), point(1, 3), point(2, 3), point(3, 3)
-        };
-
-        Image clean_img = image.clone();
-        for(int32_t x = 0; x < clean_img.width(); x++)
-            for(int32_t y = 0; y < clean_img.height(); y++)
-            {
-                int count = 0;
-                for(uint32_t index = 0; index < frame.size(); index++)
-                {
-                    count++;
-                    uint8_t current = image.element_or(x + frame[index].x, y + frame[index].y, empty_value);
-                    if (!empty_test(current))
-                    {
-                        count = 0;
-                        break;
-                    }
-                }
-                if (count != 0)
-                {
-                    for(int32_t index = 0; index < mask.size(); index++)
-                    {
-                        uint8_t current = image.element_or(x + mask[index].x, y + mask[index].y, empty_value);
-                        if (!empty_test(current))
-                        {
-                            clean_img.element(x + mask[index].x, y + mask[index].y) = 255;
-                        }
-                    }
-                }
-            }
-
-        return clean_img;
-    }
+    }    
 
     Image fragment(const Image& image, const uint8_t& value)
     {
@@ -344,6 +298,165 @@ public:
         }
 
         qDebug() << code <<  '\n';
+    }
+
+    void find_all_neighbours(const Image& skelet, const uint8_t empty_value, const uint8_t non_empty_value, const Image& visited_mask, QSet<QPoint>& neighbours, const QPoint point)
+    {
+        static const std::vector<QPoint> neighbours_pattern =
+        {
+            QPoint(1, 0), QPoint(1, 1),
+            QPoint(0, 1), QPoint(-1, 1),
+            QPoint(-1, 0), QPoint(-1, -1),
+            QPoint(0, -1), QPoint(1, -1)
+        };
+
+        neighbours.insert(point);
+
+        for(const QPoint& p : neighbours_pattern)
+        {
+            QPoint current = point + p;
+            if(skelet.element_or(current.x(), current.y(), empty_value) == non_empty_value && visited_mask.element_or(current.x(), current.y(), true) == false && !neighbours.contains(current))
+            {
+                find_all_neighbours(skelet, empty_value, non_empty_value, visited_mask, neighbours, current);
+            }
+        }
+    }
+
+    Image filter_short_branches(const Image& skelet, int32_t fragment_threshold, uint8_t empty_value = 255)
+    {
+        Image visited_mask(skelet.width(), skelet.height());
+        for(int32_t i = 0; i < visited_mask.size(); i++)
+            visited_mask.element(i) = false;
+
+        Image result = skelet.clone();
+        QSet<QPoint> neighbours;
+
+        for(int32_t x = 0; x < skelet.width(); x++)
+        {
+            for(int32_t y = 0; y < skelet.height(); y++)
+            {
+                if(skelet.element(x, y) != 0 || visited_mask.element(x, y))
+                    continue;
+
+                neighbours.clear();
+                find_all_neighbours(skelet, 255, 0, visited_mask, neighbours, QPoint(x, y));
+                //qDebug() << neighbours.size();
+
+                for(const QPoint& p : neighbours)
+                    visited_mask.element(p.x(), p.y()) = true;
+
+                if(neighbours.size() <= fragment_threshold)
+                    for(const QPoint& p : neighbours)
+                        result.element(p.x(), p.y()) = empty_value;
+            }
+        }
+
+        return result;
+    }
+
+    void find_local_neighbours(const Image& image, const QPoint& point, const uint8_t empty_value, const uint8_t non_empty_value, QSet<QPoint>& neighbours)
+    {
+        static const std::vector<QPoint> neighbours_pattern =
+        {
+            QPoint(1, 0), QPoint(1, 1),
+            QPoint(0, 1), QPoint(-1, 1),
+            QPoint(-1, 0), QPoint(-1, -1),
+            QPoint(0, -1), QPoint(1, -1)
+        };
+
+        for(const QPoint& p : neighbours_pattern)
+        {
+            QPoint current = point + p;
+            if(image.element_or(current.x(), current.y(), empty_value) == non_empty_value)
+                neighbours.insert(current);
+        }
+    }
+
+    Image filter_useless_points_new(const Image& skelet, uint8_t empty_value = 255)
+    {
+        Image result = skelet.clone();
+
+        static const std::vector<QPoint> neighbours_pattern =
+        {
+            QPoint(1, 0), QPoint(1, 1),
+            QPoint(0, 1), QPoint(-1, 1),
+            QPoint(-1, 0), QPoint(-1, -1),
+            QPoint(0, -1), QPoint(1, -1)
+        };
+
+        for(int32_t x = 0; x < result.width(); x++)
+            for(int32_t y = 0; y < result.height(); y++)
+            {
+                if(result.element(x, y) != 0)
+                    continue;
+
+                QPoint current = QPoint(x, y);
+                QSet<QPoint> neighbours;
+                find_local_neighbours(result, current, 255, 0, neighbours);
+
+                QMap<QPoint, bool> marked;
+                for(const QPoint& neighbour : neighbours)
+                {
+                    bool mark = false;
+                    for(const QPoint& p : neighbours_pattern)
+                        if(neighbours.contains(neighbour + p))
+                        {
+                            mark = true;
+                            break;
+                        }
+                    marked[neighbour] = mark;
+                }
+
+                if(!marked.values().toSet().contains(false))
+                {
+                    result.element(x, y) = empty_value;
+                }
+            }
+        return result;
+    }
+
+    Image filter_short_spikes(const Image& skelet, int32_t branch_threshold, uint8_t empty_value = 255)
+    {
+        Image result = skelet.clone();
+
+        for(int32_t x = 0; x < result.width(); x++)
+            for(int32_t y = 0; y < result.height(); y++)
+            {
+                if(result.element(x, y) != 0)
+                    continue;
+
+                QPoint current = QPoint(x, y);
+                QSet<QPoint> neighbours;
+                find_local_neighbours(result, current, 255, 0, neighbours);
+                if(neighbours.size() > 1)
+                    continue;
+
+                QPoint current_branch_point = *neighbours.begin();
+                QSet<QPoint> branch_points;
+                branch_points.insert(current);
+                while(true)
+                {
+                    QSet<QPoint> current_branch_point_neighbours;
+                    find_local_neighbours(result, current_branch_point, 255, 0, current_branch_point_neighbours);
+                    current_branch_point_neighbours.subtract(branch_points);
+
+                    if(current_branch_point_neighbours.size() == 1)
+                    {
+                        branch_points.insert(current_branch_point);
+                        current_branch_point = *current_branch_point_neighbours.begin();
+                    }
+                    else
+                        break;
+                }
+
+                if(branch_points.size() > branch_threshold)
+                    continue;
+
+                //qDebug() << branch_points.size();
+                for(const QPoint& p : branch_points)
+                    result.element(p.x(), p.y()) = empty_value;
+            }
+        return result;
     }
 };
 
