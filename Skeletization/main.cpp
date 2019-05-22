@@ -42,9 +42,12 @@ int main(int argc, char *argv[])
 
     QImage qFragmentImage = io->image_to_qImage(fragmentImage);
 
-    bool s = qSkeletImage.save("skelet.png");
-    bool c = qCleanImage.save("skelet_clean.png");
-    bool f = qFragmentImage.save("fragment.png");
+    QImage qResponseImage = io->match_process(cleanImage, QPoint(18, 69), 5);
+
+    qSkeletImage.save("skelet.png");
+    qCleanImage.save("skelet_clean.png");
+    qFragmentImage.save("fragment.png");
+    qResponseImage.save("response.png");
 
     QGraphicsScene scene;
     scene.addPixmap(QPixmap::fromImage(original_image))->setPos(0, 0);
@@ -52,6 +55,7 @@ int main(int argc, char *argv[])
     scene.addPixmap(QPixmap::fromImage(qSkeletImage))->setPos(original_image.width() + qBinaryImage.width(), 0);
     scene.addPixmap(QPixmap::fromImage(qCleanImage))->setPos(original_image.width() + qBinaryImage.width() + qSkeletImage.width(), 0);
     scene.addPixmap(QPixmap::fromImage(qFragmentImage))->setPos(original_image.width() + qBinaryImage.width() + qSkeletImage.width(), original_image.height());
+    scene.addPixmap(QPixmap::fromImage(qResponseImage))->setPos(original_image.width() + qBinaryImage.width() + qSkeletImage.width() + qCleanImage.width(), 0);
 
     QGraphicsView graphicsView(&scene);
     graphicsView.addAction(exitAction);

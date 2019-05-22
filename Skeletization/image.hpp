@@ -458,6 +458,77 @@ public:
             }
         return result;
     }
+
+    std::vector<double> compute_central_moments(const Image& image, const QPoint& point, const int window_size)
+    {
+        auto m = [&](int p, int q)
+        {
+            double s = 0;
+            for(int x = -window_size / 2.0; x < window_size / 2.0; x++)
+                for(int y = -window_size / 2.0; y < window_size / 2.0; y++)
+                    s += pow(x, p) * pow(y, q) * (image.element_or(point.x() + x, point.y() + y, 255) == 255 ? 0 : 1);
+            return s;
+        };
+
+        double m10 = m(1, 0), m01 = m(0, 1), m00 = m(0, 0);
+        double avg_x = m10 / (m00 != 0 ? m00 : 1);
+        double avg_y = m01 / (m00 != 0 ? m00 : 1);
+
+        auto u = [&](int p, int q)
+        {
+            double s = 0;
+            for(int x = -window_size / 2.0; x < window_size / 2.0; x++)
+                for(int y = -window_size / 2.0; y < window_size / 2.0; y++)
+                    s += pow(x - avg_x, p) * pow(y - avg_y, q) * (image.element_or(point.x() + x, point.y() + y, 255) == 255 ? 0 : 1);
+            return s;
+        };
+
+        std::vector<double> res(3);
+
+        res[0] = u(0, 0);
+        res[1] = u(1, 0);
+        res[2] = u(0, 1);
+
+        return res;
+    }
+
+    QImage match_process(const Image& _fragmentImage, QPoint initial_point, const int _neural_window_size)
+    {
+        std::vector<double> initial_moments = compute_central_moments(_fragmentImage, initial_point, _neural_window_size);
+
+        Image result(_fragmentImage.width(), _fragmentImage.height());
+
+        QImage QImage(_fragmentImage.width(), _fragmentImage.height(), QImage::Format_RGB888);
+        for(int x = 0; x < _fragmentImage.width(); x++)
+            for(int y = 0; y < _fragmentImage.height(); y++)
+            {
+                std::vector<double> data = compute_central_moments(_fragmentImage, QPoint(x, y), _neural_window_size);
+
+                double sum = 0;
+                for(int i = 0; i < data.size(); i++)
+                    sum += pow(data[i] - initial_moments[i], 2);
+                double error = sqrt(sum / data.size());
+
+                result.element(x, y) = error;
+            }
+
+        double max_value = 0;
+        for(int x = 0; x < _fragmentImage.width(); x++)
+            for(int y = 0; y < _fragmentImage.height(); y++)
+            {
+                if(result.element(x, y) > max_value)
+                    max_value = result.element(x, y);
+            }
+
+        for(int x = 0; x < _fragmentImage.width(); x++)
+            for(int y = 0; y < _fragmentImage.height(); y++)
+                QImage.setPixel(x, y, qRgb(0, 255 * (1 - result.element(x, y) / max_value), 0));
+
+//        ui->fragmentImage->scene()->clear();
+//        _qFragmentImage = ui->fragmentImage->scene()->addPixmap(QPixmap::fromImage(QImage));
+//        _qFragmentImage->setScale(_fragmentScale);
+        return QImage;
+    }
 };
 
 #endif // IMAGE_H
