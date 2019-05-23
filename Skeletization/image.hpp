@@ -322,7 +322,7 @@ public:
         }
     }
 
-    Image filter_short_branches(const Image& skelet, int32_t fragment_threshold, uint8_t empty_value = 255)
+    Image filter_skelet(const Image& skelet, int32_t fragment_threshold, uint8_t empty_value = 255)
     {
         Image visited_mask(skelet.width(), skelet.height());
         for(int32_t i = 0; i < visited_mask.size(); i++)
@@ -415,7 +415,7 @@ public:
         return result;
     }
 
-    Image filter_short_spikes(const Image& skelet, int32_t branch_threshold, uint8_t empty_value = 255)
+    Image filter_short_branches(const Image& skelet, int32_t branch_threshold, uint8_t empty_value = 255)
     {
         Image result = skelet.clone();
 
@@ -492,9 +492,9 @@ public:
         return res;
     }
 
-    QImage match_process(const Image& _fragmentImage, QPoint initial_point, const int _neural_window_size)
+    QImage match_process(const Image& _fragmentImage, QPoint initial_point, const int window_size)
     {
-        std::vector<double> initial_moments = compute_central_moments(_fragmentImage, initial_point, _neural_window_size);
+        std::vector<double> initial_moments = compute_central_moments(_fragmentImage, initial_point, window_size);
 
         Image result(_fragmentImage.width(), _fragmentImage.height());
 
@@ -502,7 +502,7 @@ public:
         for(int x = 0; x < _fragmentImage.width(); x++)
             for(int y = 0; y < _fragmentImage.height(); y++)
             {
-                std::vector<double> data = compute_central_moments(_fragmentImage, QPoint(x, y), _neural_window_size);
+                std::vector<double> data = compute_central_moments(_fragmentImage, QPoint(x, y), window_size);
 
                 double sum = 0;
                 for(int i = 0; i < data.size(); i++)

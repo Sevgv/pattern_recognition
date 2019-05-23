@@ -29,9 +29,9 @@ int main(int argc, char *argv[])
     Image skeletImage = skelet(binaryImage, [](uint8_t v) {return v == 255;}, 255);  
     QImage qSkeletImage = io->image_to_qImage(skeletImage);
 
-    Image __cleanImage = io->filter_short_branches(skeletImage, 5, 255);
+    Image __cleanImage = io->filter_skelet(skeletImage, 5, 255);
     Image _cleanImage = io->filter_useless_points_new(__cleanImage, 255);
-    Image cleanImage = io->filter_short_spikes(_cleanImage, 5, 255);
+    Image cleanImage = io->filter_short_branches(_cleanImage, 5, 255);
 
 
     QImage qCleanImage = io->image_to_qImage(cleanImage);
